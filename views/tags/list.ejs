@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%- include("../partials/head.ejs") %>
+</head>
+<body>
+    <%- include("../partials/header.ejs") %>
+    <div class="container">
+        <h2 class="mb-4 mt-5">Tags</h2>
+
+        <div class="row">
+            <div class="col-10">
+                <input id="name" type="text" name="name" class="form-control" placeholder="Tag à ajouter"/>
+            </div>
+            <div class="col-2">
+                <button type="button" class="btn btn-primary" data-fn="add-tag">
+                    <i class="bi bi-plus-square mr-3"></i> Ajouter
+                </button>
+            </div>
+        </div>
+
+        <table id="tagTable" class="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Nom</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <% for (tag of tags) { %>
+                <tr data-tag-id="<%= tag.id %>">
+                    <th scope="row"><%= tag.id %></th>
+                    <td><%= tag.name %></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" data-fn="edit-tag" data-id="<%= tag.id %>">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger" data-fn="delete-tag" data-id="<%= tag.id %>">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+            <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', init)
+
+        function init() {
+            document.querySelector('button[data-fn="add-tag"]').addEventListener('click', onAddTag);
+            document.querySelectorAll('button[data-fn="edit-tag"]').forEach(elem => elem.addEventListener('click', onEditTag));
+            document.querySelectorAll('button[data-fn="delete-tag"]').forEach(elem => elem.addEventListener('click', onDeleteTag));
+        }
+
+        /*****************/
+        /* EVENT HANDLER */
+        /*****************/
+
+        function onAddTag() {
+            const newTag = JSON.stringify({
+                "name": document.getElementById("name").value
+            });
+
+            httpRequest = new XMLHttpRequest();
+            httpRequest.open('POST', `/api/v1/tags`);
+            httpRequest.onreadystatechange = function() {
+                try {
+                    if (httpRequest.readyState === 4) {
+                        if (httpRequest.status === 200) {
+                            addTagRow(JSON.parse(httpRequest.response));
+                        } else {
+                            spinToPlus();
+                        }
+                    }
+                }
+                catch (e) {
+                    alert("Une erreur s'est produite : " + e.description);
+                    spinToPlus();
+                }
+            };
+            httpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8")
+            httpRequest.send(newTag);
+        }
+
+        function onEditTag() {
+            const tag = {
+                id: this.dataset.id,
+                name: this.parentElement.parentElement.children[1].textContent
+            };
+
+            viewRowToEditRow(tag);
+        }
+
+        function onValidateEditTag() {
+            const tagId = this.dataset.id;
+            const editTag = JSON.stringify({
+                "id": tagId,
+                "name": document.querySelector(`[data-tag-id="${ tagId }"] :nth-child(2) input`).value
+            });
+
+            httpRequest = new XMLHttpRequest();
+            httpRequest.open('PUT', `/api/v1/tags/id/${ tagId }`);
+            httpRequest.onreadystatechange = function() {
+                try {
+                    if (httpRequest.readyState === 4) {
+                        if (httpRequest.status === 200) {
+                            console.log(httpRequest.response);
+                            editRowToViewRow(JSON.parse(httpRequest.response));
+                        } else {
+                            // TODO : spinToCheck();
+                        }
+                    }
+                }
+                catch (e) {
+                    alert("Une erreur s'est produite : " + e.description);
+                    // TODO : spinToCheck();
+                }
+            };
+            httpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8")
+            httpRequest.send(editTag);
+        }
+
+        function onCancelEditTag() {
+            const tag = {
+                id: this.dataset.id,
+                name: this.parentElement.parentElement.children[1].dataset.value
+            };
+
+            editRowToViewRow(tag);
+        }
+
+        function onDeleteTag() {
+            const tagId = this.dataset.id;
+
+            trashToSpin(tagId, this);
+
+            httpRequest = new XMLHttpRequest();
+            httpRequest.open('DELETE', `/api/v1/tags/id/${ tagId }`);
+            httpRequest.onreadystatechange = function() {
+                try {
+                    if (httpRequest.readyState === 4) {
+                        if (httpRequest.status === 200) {
+                            document.querySelector(`tr[data-tag-id="${ tagId }"]`).remove();
+                        } else {
+                            spinToTrash(tagId);
+                        }
+                    }
+                }
+                catch (e) {
+                    alert("Une erreur s'est produite : " + e.description);
+                    spinToTrash(tagId);
+                }
+            };
+            httpRequest.send();
+        }
+
+        /*****************/
+        /* TABLE MANAGER */
+        /*****************/
+
+        function addTagRow(tag) {
+            // Ecriture du code de la ligne
+            const html = `<tr data-tag-id="${ tag.id }">
+                    <th scope="row">${ tag.id }</th>
+                    <td>${ tag.name }</td>
+                    <td>
+                        <button type="button" class="btn btn-primary">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger" data-fn="delete-btn" data-id="${ tag.id }">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </td>
+                </tr>`;
+
+            // Ajout de la ligne dans le tableau
+            document.getElementById('tagTable').querySelector('tbody').insertAdjacentHTML("beforeend", html);
+
+            // Ajout des event listener sur la ligne
+            document.querySelector(`tr[data-tag-id="${ tag.id }"] button[data-fn="delete-btn"]`).addEventListener('click', onDeleteTag);
+        }
+
+        function viewRowToEditRow(tag) {
+            // Définition de l'HTML
+            const name = `<input type="text" class="form-control" value="${ tag.name }" />`;
+            const actionBtn = `<button type="button" class="btn btn-success" data-fn="validate-edit-tag" data-id="${ tag.id }">
+                            <i class="bi bi-check2"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger" data-fn="cancel-edit-tag" data-id="${ tag.id }">
+                            <i class="bi bi-x"></i>
+                        </button>`;
+
+            // Mise à jour ligne
+            const row = document.querySelector(`tr[data-tag-id="${ tag.id }"]`);
+            row.children[1].dataset.value = tag.name;
+            row.children[1].innerHTML = name;
+            row.children[2].innerHTML = actionBtn;
+
+            // Ajout event listener
+            document.querySelector(`tr[data-tag-id="${ tag.id }"] [data-fn="validate-edit-tag"]`).addEventListener('click', onValidateEditTag);
+            document.querySelector(`tr[data-tag-id="${ tag.id }"] [data-fn="cancel-edit-tag"]`).addEventListener('click', onCancelEditTag);
+        }
+
+        function editRowToViewRow(tag) {
+            // Définition de l'HTML
+            const name = `${ tag.name }`;
+            const actionBtn = `<button type="button" class="btn btn-primary" data-fn="edit-tag" data-id="${ tag.id }">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger" data-fn="delete-tag" data-id="${ tag.id }">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>`;
+
+            // Mise à jour ligne
+            const row = document.querySelector(`tr[data-tag-id="${ tag.id }"]`);
+            row.children[1].innerHTML = name;
+            row.children[2].innerHTML = actionBtn;
+
+            // Ajout event listener
+            document.querySelector(`tr[data-tag-id="${ tag.id }"] [data-fn="edit-tag"]`).addEventListener('click', onEditTag);
+            document.querySelector(`tr[data-tag-id="${ tag.id }"] [data-fn="delete-tag"]`).addEventListener('click', onDeleteTag);
+        }
+
+        /****************/
+        /* ICON MANAGER */
+        /****************/
+
+        function trashToSpin(tagId, container = null) {
+            const html = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="visually-hidden">Loading...</span>`;
+
+            if (container != null) {
+                container.innerHTML = html;
+            } else {
+                document.querySelector(`button[data-fn="delete-btn"][data-id="${ tagId }"]`).innerHTML = html;
+            }
+        }
+
+        function plusToSpin() {
+            // TODO
+        }
+
+        function checkToSpin() {
+            // TODO
+        }
+
+        function spinToTrash(tagId, container = null) {
+            const html = `<i class="bi bi-trash-fill"></i>`;
+
+            if (container != null) {
+                container.innerHTML = html;
+            } else {
+                document.querySelector(`button[data-fn="delete-btn"][data-id="${ tagId }"]`).innerHTML = html;
+            }
+        }
+
+        function spinToPlus() {
+            // TODO
+        }
+
+        function spinToCheck() {
+
+        }
+    </script>
+</body>
+</html>
