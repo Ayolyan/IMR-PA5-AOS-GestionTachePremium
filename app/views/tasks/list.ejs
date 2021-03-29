@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include("../partials/head.ejs") %>
+</head>
+<body>
+    <%- include("../partials/header.ejs") %>
+    <div class="container">
+        <h2 class="mb-4 mt-5">Taches</h2>
+
+        <div class="mb-3">
+            <a href="/taches/create" class="btn btn-primary"><i class="bi bi-plus-square"></i> Ajouter une tache</a>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Date de début</th>
+                    <th scope="col">Date de fin</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (task of tasks) { %>
+                <tr data-task-id="<%= task.id %>">
+                    <th scope="row"><%= task.id %></th>
+                    <td><%= task.title %></td>
+                    <td><%= task.dateBegin %></td>
+                    <td><%= task.dateEnd %></td>
+                    <td><%= task.state %></td>
+                    <td>
+                        <button type="button" class="btn btn-primary">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger" data-fn="delete-btn" data-id="<%= task.id %>">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </td>
+                </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const taskAPIRoot = 'http://localhost:3001';
+        const tagAPIRoot  = 'http://localhost:3002';
+
+        document.addEventListener('DOMContentLoaded', init)
+
+        function init() {
+            document.querySelectorAll('button[data-fn="delete-btn"]').forEach(elem => elem.addEventListener('click', onDeleteTask));
+        }
+
+        function onDeleteTask(evt) {
+            const taskId = this.dataset.id;
+
+            trashToSpin(taskId, this);
+
+            httpRequest = new XMLHttpRequest();
+            httpRequest.open('DELETE', `${ taskAPIRoot }/api/v1/tasks/id/${ taskId }`);
+            httpRequest.onreadystatechange = function() {
+                try {
+                    if (httpRequest.readyState === 4) {
+                        if (httpRequest.status === 200) {
+                            document.querySelector(`tr[data-task-id="${ taskId }"]`).remove();
+                        } else {
+                            spinToTrash(taskId);
+                        }
+                    }
+                }
+                catch (e) {
+                    alert("Une erreur s'est produite : " + e.description);
+                    spinToTrash(taskId);
+                }
+            };
+            httpRequest.send();
+        }
+
+        function trashToSpin(taskId, container = null) {
+            const html = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="visually-hidden">Loading...</span>`;
+
+            if (container != null) {
+                container.innerHTML = html;
+            } else {
+                document.querySelector(`button[data-fn="delete-btn"][data-id="${ taskId }"]`).innerHTML = html;
+            }
+        }
+
+        function spinToTrash(taskId, container = null) {
+            const html = `<i class="bi bi-trash-fill"></i>`;
+
+            if (container != null) {
+                container.innerHTML = html;
+            } else {
+                document.querySelector(`button[data-fn="delete-btn"][data-id="${ taskId }"]`).innerHTML = html;
+            }
+        }
+
+    </script>
+</body>
+</html>

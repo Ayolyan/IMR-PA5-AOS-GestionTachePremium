@@ -5,6 +5,8 @@
  */
 
 var app = require('../app');
+var taskService = require('../taskService');
+var tagService = require('../tagService');
 var debug = require('debug')('imr-pa5-aos-gestiontachepremium:server');
 var http = require('http');
 
@@ -12,14 +14,22 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.APPPORT || '3000');
 app.set('port', port);
+
+var taskServicePort = normalizePort(process.env.TASKPORT || '3001');
+taskService.set('port', port);
+
+var tagServicePort = normalizePort(process.env.TAGPORT || '3002');
+tagService.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
 var server = http.createServer(app);
+var taskServer = http.createServer(taskService);
+var tagServer  = http.createServer(tagService);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -28,6 +38,14 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+taskServer.listen(taskServicePort);
+taskServer.on('error', onError);
+taskServer.on('listening', onTaskListening);
+
+tagServer.listen(tagServicePort);
+tagServer.on('error', onError);
+tagServer.on('listening', onTagListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -86,5 +104,29 @@ function onListening() {
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
+
+/**
+ * Event listener for HTTP taskServer "listening" event.
+ */
+
+function onTaskListening() {
+  var addr = taskServer.address();
+  var bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
+
+/**
+ * Event listener for HTTP tagServer "listening" event.
+ */
+
+function onTagListening() {
+  var addr = tagServer.address();
+  var bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
