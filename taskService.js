@@ -21,7 +21,7 @@ db.defaults({
             title: "Finir le projet JEE",
             dateBegin: new Date("2018-03-20"),
             dateEnd: new Date("2018-04-11"),
-            state: "non précisé",
+            state: "non precise",
             tags: [ "0" ]
         },
         {
@@ -37,7 +37,7 @@ db.defaults({
             title: "truc",
             dateBegin: new Date("2019-03-15"),
             dateEnd: new Date("2019-04-28"),
-            state: "annulée",
+            state: "annulee",
             tags: [ "2" ]
         }
     ]

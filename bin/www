@@ -7,6 +7,7 @@
 var app = require('../app');
 var taskService = require('../taskService');
 var tagService = require('../tagService');
+var userService = require('../userService');
 var debug = require('debug')('imr-pa5-aos-gestiontachepremium:server');
 var http = require('http');
 
@@ -23,6 +24,9 @@ taskService.set('port', port);
 var tagServicePort = normalizePort(process.env.TAGPORT || '3002');
 tagService.set('port', port);
 
+var userServicePort = normalizePort(process.env.USERPORT || '3003');
+userService.set('port', port);
+
 /**
  * Create HTTP server.
  */
@@ -30,6 +34,7 @@ tagService.set('port', port);
 var server = http.createServer(app);
 var taskServer = http.createServer(taskService);
 var tagServer  = http.createServer(tagService);
+var userServer  = http.createServer(userService);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -46,6 +51,10 @@ taskServer.on('listening', onTaskListening);
 tagServer.listen(tagServicePort);
 tagServer.on('error', onError);
 tagServer.on('listening', onTagListening);
+
+userServer.listen(userServicePort);
+userServer.on('error', onError);
+userServer.on('listening', onUserListening);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -125,6 +134,18 @@ function onTaskListening() {
 
 function onTagListening() {
   var addr = tagServer.address();
+  var bind = typeof addr === 'string'
+      ? 'pipe ' + addr
+      : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
+
+/**
+ * Event listener for HTTP userServer "listening" event.
+ */
+
+function onUserListening() {
+  var addr = userServer.address();
   var bind = typeof addr === 'string'
       ? 'pipe ' + addr
       : 'port ' + addr.port;
