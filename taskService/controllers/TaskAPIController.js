@@ -22,7 +22,7 @@ class TaskAPIController {
 
     getByTagsId(req, res) {
         const taskService = TaskService.getInstance();
-        console.log(req.query.method);
+
         let tasks;
         switch (req.query.method) {
             case 'or':
@@ -80,16 +80,30 @@ class TaskAPIController {
 
         const taskEditedFields = req.body;
 
+        if (taskEditedFields.id !== undefined) {
+            if (taskEditedFields.id !== req.params.id) {
+                res.status(400).json({ errors: [{ message: 'L\'id d\'une tâche ne peut être changé via cette API' }] });
+            }
+        }
+
         if (taskEditedFields.dateBegin) {
-            taskEditedFields.dateBegin = new Date(taskEditedFields.dateBegin);
-        } else {
-            res.status(400).json({ errors: [{ message: 'Format de date de début non supporté' }] });
+            try {
+                taskEditedFields.dateBegin = new Date(taskEditedFields.dateBegin);
+            } catch (e) {
+                res.status(400).json({ errors: [{ message: 'Format de date de début non supporté' }] });
+            }
         }
 
         if (taskEditedFields.dateEnd) {
-            taskEditedFields.dateEnd = new Date(taskEditedFields.dateEnd);
-        } else {
-            res.status(400).json({ errors: [{ message: 'Format de date de fin non supporté' }] });
+            try {
+                taskEditedFields.dateEnd = new Date(taskEditedFields.dateEnd);
+            } catch (e) {
+                res.status(400).json({ errors: [{ message: 'Format de date de fin non supporté' }] });
+            }
+        }
+
+        if (taskEditedFields.dateBegin > taskEditedFields.dateEnd) {
+            res.status(400).json({ errors: [{ message: 'La date de fin doit être supérieure à la date de début' }] });
         }
 
         taskService.update(req.params.id, taskEditedFields);
