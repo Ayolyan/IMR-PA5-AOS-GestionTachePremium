@@ -19,25 +19,25 @@ db.defaults({
         {
             id: nanoid(8),
             title: "Finir le projet JEE",
-            dateBegin: "20/03/2018",
-            dateEnd: "11/04/2018",
+            dateBegin: new Date("2018-03-20"),
+            dateEnd: new Date("2018-04-11"),
             state: "non précisé",
             tags: [ "0" ]
         },
         {
             id: nanoid(8),
             title: "Blabla",
-            dateBegin: "20/03/2018",
-            dateEnd: "11/04/2018",
+            dateBegin: new Date("2018-03-20"),
+            dateEnd: new Date("2018-04-11"),
             state: "en cours",
             tags: [ "1", "2" ]
         },
         {
             id: nanoid(8),
             title: "truc",
-            dateBegin: "20/03/2018",
-            dateEnd: "11/04/2018",
-            state: "annulé",
+            dateBegin: new Date("2019-03-15"),
+            dateEnd: new Date("2019-04-28"),
+            state: "annulée",
             tags: [ "2" ]
         }
     ]

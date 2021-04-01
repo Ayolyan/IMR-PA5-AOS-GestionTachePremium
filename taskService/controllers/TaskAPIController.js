@@ -10,6 +10,38 @@ class TaskAPIController {
         res.json(taskService.get());
     }
 
+    getAchievable(req, res) {
+        const taskService = TaskService.getInstance();
+        res.json(taskService.getAchievable());
+    }
+
+    getByTagId(req, res) {
+        const taskService = TaskService.getInstance();
+        res.json(taskService.getByTagId(req.params.tagId));
+    }
+
+    getByTagsId(req, res) {
+        const taskService = TaskService.getInstance();
+        console.log(req.query.method);
+        let tasks;
+        switch (req.query.method) {
+            case 'or':
+                tasks = taskService.getByTagsIdOr(JSON.parse(req.params.tagsId));
+                break;
+            case 'and':
+                tasks = taskService.getByTagsIdAnd(JSON.parse(req.params.tagsId));
+                break;
+            case undefined:
+                tasks = taskService.getByTagsIdAnd(JSON.parse(req.params.tagsId));
+                break;
+            default:
+                res.status(400).json({ errors: [{ message: 'Argument "method" invalide' }] });
+                // res.render('error', { message: 'Argument "method" invalide', error: Error('Argument "method" invalide') });
+        }
+
+        res.json(tasks);
+    }
+
     /* GET task by id */
     getById(req, res) {
         const taskService = TaskService.getInstance();
@@ -20,28 +52,47 @@ class TaskAPIController {
     post(req, res) {
         const taskService = TaskService.getInstance();
 
-        const dateBegin = req.body.dateBegin;
-        const dateEnd = req.body.dateEnd;
+        const dateBegin = new Date(req.body.dateBegin);
+        const dateEnd = new Date(req.body.dateEnd);
         const tags = req.body.tags;
 
-        const task = new Task(
-            nanoid(8),
-            req.body.title,
-            dateBegin,
-            dateEnd,
-            req.body.state,
-            tags
-        );
+        try {
+            const task = new Task(
+                nanoid(8),
+                req.body.title,
+                dateBegin,
+                dateEnd,
+                req.body.state,
+                tags
+            );
 
-        taskService.create(task);
+            taskService.create(task);
 
-        res.json("Successful Added");
+            res.json(task);
+        } catch (err) {
+            res.status(400).json({ errors: [{ message: err.message }] });
+        }
     }
 
     /* UPDATE task */
     put(req, res) {
         const taskService = TaskService.getInstance();
-        taskService.update(req.params.id, req.body);
+
+        const taskEditedFields = req.body;
+
+        if (taskEditedFields.dateBegin) {
+            taskEditedFields.dateBegin = new Date(taskEditedFields.dateBegin);
+        } else {
+            res.status(400).json({ errors: [{ message: 'Format de date de début non supporté' }] });
+        }
+
+        if (taskEditedFields.dateEnd) {
+            taskEditedFields.dateEnd = new Date(taskEditedFields.dateEnd);
+        } else {
+            res.status(400).json({ errors: [{ message: 'Format de date de fin non supporté' }] });
+        }
+
+        taskService.update(req.params.id, taskEditedFields);
 
         res.json("Successful Updated");
     }
@@ -51,7 +102,6 @@ class TaskAPIController {
         const taskService = TaskService.getInstance();
         taskService.deleteById(req.params.id);
 
-        res
         res.json("Successful Deleted");
     }
 }

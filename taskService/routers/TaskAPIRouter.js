@@ -8,7 +8,10 @@ const taskController = new TaskController();
 
 // Déclaration des routers
 router.get('/', taskController.get);
+router.get('/achievable', taskController.getAchievable);
 router.get('/id/:id', taskController.getById);
+router.get('/tag/id/:tagId', taskController.getByTagId);
+router.get('/tags/id/:tagsId', taskController.getByTagsId);
 
 router.post('/', taskController.post);
 

@@ -15,8 +15,24 @@ class TaskService {
         throw new Error('Method get not implemented.');
     }
 
+    getAchievable() {
+        throw new Error('Method getAchieved not implemented');
+    }
+
     getById(id) {
         throw new Error('Method getById not implemented.');
+    }
+
+    getByTagIdAnd(tagId) {
+        throw new Error('Method getByTagIdAnd not implemented');
+    }
+
+    getByTagIdOr(tagId) {
+        throw new Error('Method getByTagIdOr not implemented');
+    }
+
+    getByTagsId(tagsId) {
+        throw new Error('Method getByTagsId not implemented');
     }
 
     create(task) {

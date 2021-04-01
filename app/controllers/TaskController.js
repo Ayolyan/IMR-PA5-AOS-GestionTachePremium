@@ -5,7 +5,7 @@ const axios = require('axios');
 class TaskController {
 
     getList(req, res) {
-        axios.get(`http://localhost:${ process.env.TASKPORT || '3001' }/api/v1/tasks`)
+        axios.get(`${ process.env.TASKURL || 'http://localhost' }:${ process.env.TASKPORT || '3001' }/api/v1/tasks`)
             .then( (response) => {
                 res.render('tasks/list', { tasks: response.data });
             })
@@ -13,19 +13,32 @@ class TaskController {
     }
 
     getCreate(req, res) {
-        axios.get(`http://localhost:${process.env.TAGPORT || '3002'}/api/v1/tags`)
+        axios.get(`${ process.env.TAGURL || 'http://localhost' }:${process.env.TAGPORT || '3002'}/api/v1/tags`)
             .then( (response) => {
                 res.render('tasks/create', { tags: response.data });
             })
             .catch( err => res.send(err));
     }
 
-    getEdit(req, res) {
-        axios.get(`http://localhost:${process.env.TAGPORT || '3002'}/api/v1/tags`)
+    async getEdit(req, res) {
+        const taskId = req.params.id;
+
+        let task;
+        let tags;
+
+        await axios.get(`${ process.env.TASKURL || 'http://localhost' }:${process.env.TASKPORT || '3001'}/api/v1/tasks/id/${ taskId }`)
             .then( (response) => {
-                res.render('tasks/edit', { tags: response.data });
+                task = response.data;
             })
             .catch( err => res.send(err));
+
+        await axios.get(`${ process.env.TAGURL || 'http://localhost' }:${process.env.TAGPORT || '3002'}/api/v1/tags`)
+            .then( (response) => {
+                tags = response.data;
+            })
+            .catch( err => res.send(err));
+
+        res.render('tasks/edit', { task: task, tags: tags });
     }
 
 }

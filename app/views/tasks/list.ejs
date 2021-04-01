@@ -28,13 +28,15 @@
                 <tr data-task-id="<%= task.id %>">
                     <th scope="row"><%= task.id %></th>
                     <td><%= task.title %></td>
-                    <td><%= task.dateBegin %></td>
-                    <td><%= task.dateEnd %></td>
+                    <td><%= new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: '2-digit'}).format(Date.parse(task.dateBegin)) %></td>
+                    <td><%= new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'long', day: '2-digit'}).format(Date.parse(task.dateEnd)) %></td>
                     <td><%= task.state %></td>
                     <td>
-                        <button type="button" class="btn btn-primary">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
+                        <a href="/taches/edit/<%= task.id %>">
+                            <button type="button" class="btn btn-primary">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                        </a>
                         <button type="button" class="btn btn-danger" data-fn="delete-btn" data-id="<%= task.id %>">
                             <i class="bi bi-trash-fill"></i>
                         </button>
@@ -52,6 +54,7 @@
         document.addEventListener('DOMContentLoaded', init)
 
         function init() {
+            document.querySelectorAll('button[data-fn="edit-btn"]').forEach(elem => elem.addEventListener('click', onEditTask));
             document.querySelectorAll('button[data-fn="delete-btn"]').forEach(elem => elem.addEventListener('click', onDeleteTask));
         }
 

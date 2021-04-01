@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include("../partials/head.ejs") %>
+
+    <script src="/javascripts/lc_select.min.js"></script>
+    <link rel="stylesheet" href="/stylesheets/lc_select_light.css">
+</head>
+<body>
+<%- include("../partials/header.ejs") %>
+<div class="container">
+    <h2 class="mb-5 mt-5">Taches - Edition</h2>
+
+    <form name="createTask">
+        <div class="mb-3 row">
+            <label for="title" class="col-2 col-form-label">Titre</label>
+            <div class="col-10">
+                <input type="text" id="title" class="form-control" value="<%= task.title %>" placeholder="Titre" required>
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="dateBegin" class="col-2 col-form-label">Date de début</label>
+            <div class="col-10">
+                <input class="form-control" type="date" id="dateBegin"
+                       value="<%= new Date(task.dateBegin).toISOString().slice(0, 10) %>"
+                       required>
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="dateEnd" class="col-2 col-form-label">Date de fin</label>
+            <div class="col-10">
+                <input class="form-control" type="date" id="dateEnd"
+                       value="<%= new Date(task.dateEnd).toISOString().slice(0, 10) %>"
+                       required>
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="state" class="col-2 col-form-label">Statut</label>
+            <div class="col-10">
+                <select id="state" class="form-select" aria-label="Default select example">
+                    <option value="non précisé"
+                            <% if (task.state === 'non precise') {%>selected<% } %>>Non précisé</option>
+                    <option value="une tâche est requise"
+                            <% if (task.state === 'une tache est requise') {%>selected<% } %>>Une tâche est requise</option>
+                    <option value="en cours"
+                            <% if (task.state === 'en cours') {%>selected<% } %>>En cours</option>
+                    <option value="achevée"
+                            <% if (task.state === 'achevee') {%>selected<% } %>>Achevée</option>
+                    <option value="annulée"
+                            <% if (task.state === 'annulee') {%>selected<% } %>>Annulée</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="tags" class="col-2 col-form-label">Tags</label>
+            <div class="col-10">
+                <select id="tags" class="form-select" name="multiple" data-placeholder="Sélectionnner jusqu'à 5 tags" multiple>
+                    <% for (tag of tags) { %>
+                        <option value="<%= tag.id %>"
+                                <% if (task.tags.includes(tag.id)) {%>selected<% } %>><%= tag.name %></option>
+                    <% } %>
+                </select>
+            </div>
+        </div>
+        <input type="hidden" id="taskId" name="taskId" value="<%= task.id %>">
+        <button id="formSubmitBtn" type="submit" class="btn btn-primary">Modifier</button>
+    </form>
+</div>
+
+<script>
+    let httpRequest;
+    let tags_selected = [];
+
+    const taskAPIRoot = 'http://localhost:3001';
+    const tagAPIRoot  = 'http://localhost:3002';
+
+    document.addEventListener('DOMContentLoaded', init)
+
+    function init() {
+        document.getElementById('formSubmitBtn').addEventListener('click', onFormSubmit);
+
+        // Documentation librairie de multi-select : https://github.com/LCweb-ita/LC-select
+        new lc_select('select[name="multiple"]', {
+            wrap_width: '100%',
+            enable_search: true,
+            min_for_search: 5,
+            max_opts: 5,
+            on_change: onTagSelectChange
+        });
+    }
+
+    function onTagSelectChange(new_value, target_field) {
+        tags_selected = new_value;
+    }
+
+    function onFormSubmit(evt) {
+        evt.preventDefault();
+
+        const editForm = document.forms.createTask;
+        const formValue = JSON.stringify({
+            "title": editForm.elements.title.value,
+            "dateBegin": editForm.elements.dateBegin.value,
+            "dateEnd": editForm.elements.dateEnd.value,
+            "state": editForm.elements.state.value,
+            "tags": tags_selected
+        });
+
+        httpRequest = new XMLHttpRequest();
+        if (!httpRequest) {
+            alert('Abandon : (Impossible de créer une instance de XMLHTTP');
+            return false;
+        }
+        httpRequest.open('PUT', `${ taskAPIRoot }/api/v1/tasks/id/${ editForm.elements.taskId.value }`);
+        httpRequest.onreadystatechange = function() {
+            try {
+                if (httpRequest.readyState === 4) {
+                    if (httpRequest.status === 200) {
+                        window.location.href = "/taches";
+                    } else {
+                        // TODO : spinToCheck();
+                    }
+                }
+            }
+            catch (e) {
+                alert("Une erreur s'est produite : " + e.description);
+            }
+        };
+        httpRequest.setRequestHeader("Content-Type", "application/json;charset=UTF-8")
+        httpRequest.send(formValue);
+    }
+
+</script>
+</body>
+</html>
