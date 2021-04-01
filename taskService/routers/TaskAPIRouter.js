@@ -16,6 +16,7 @@ router.get('/tags/id/:tagsId', taskController.getByTagsId);
 router.post('/', taskController.post);
 
 router.put('/id/:id', taskController.put);
+router.put('/id/:id/user/:userId', taskController.putAddUser);
 
 router.delete('/id/:id', taskController.delete);
 

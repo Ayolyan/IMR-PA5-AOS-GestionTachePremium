@@ -55,6 +55,7 @@ class TaskAPIController {
         const dateBegin = new Date(req.body.dateBegin);
         const dateEnd = new Date(req.body.dateEnd);
         const tags = req.body.tags;
+        const users = req.body.users;
 
         try {
             const task = new Task(
@@ -63,12 +64,17 @@ class TaskAPIController {
                 dateBegin,
                 dateEnd,
                 req.body.state,
-                tags
+                tags,
+                users
             );
 
-            taskService.create(task);
+            try {
+                taskService.create(task);
 
-            res.json(task);
+                res.json(task);
+            } catch (err) {
+                res.status(500).json({ errors: [{ message: err.message }] });
+            }
         } catch (err) {
             res.status(400).json({ errors: [{ message: err.message }] });
         }
@@ -109,6 +115,14 @@ class TaskAPIController {
         taskService.update(req.params.id, taskEditedFields);
 
         res.json("Successful Updated");
+    }
+
+    putAddUser(req, res) {
+        const taskService = TaskService.getInstance();
+
+        taskService.updateAddUserById(req.params.id, req.params.userId);
+
+        res.json("User successful added to the task");
     }
 
     /* DELETE task */

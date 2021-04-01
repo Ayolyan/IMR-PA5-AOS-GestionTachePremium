@@ -43,6 +43,10 @@ class TaskService {
         throw new Error('Method update not implemented.');
     }
 
+    updateAddUserById (id, userId) {
+        throw new Error('Method updateAddUserById not implemented.');
+    }
+
     deleteById(id) {
         throw new Error('Method delete not implemented.');
     }

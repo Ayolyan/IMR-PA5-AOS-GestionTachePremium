@@ -5,7 +5,7 @@ https://github.com/Ayolyan/IMR-PA5-AOS-GestionTachePremium
 Ce projet contient 4 serveurs express :
 * `app.js` : exécution d'un front office pour administrer les tâches ;
 * `taskService` : service mettant à disposition des verbe API pour accéder aux tâches et les administrer ;
-* `tagService` : service mettant à disposition des verbe API pour accéder aux tags et les administrer.
+* `tagService` : service mettant à disposition des verbe API pour accéder aux tags et les administrer ;
 * `userService` : service mettant à disposition des verbe API pour accéder aux utilisateur et les administrer.
 
 Les fichiers nécessaires à l'exécution de chaque serveur se trouvent respectivement dans les dossiers :

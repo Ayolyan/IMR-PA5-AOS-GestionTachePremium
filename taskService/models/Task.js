@@ -10,12 +10,13 @@ class TaskModel {
         'annulee'
     ];
 
-    constructor(id, title, dateBegin, dateEnd, state, tags) {
+    constructor(id, title, dateBegin, dateEnd, state, tags, users) {
         this.setId(id);
         this.setTitle(title);
         this.setDates(dateBegin, dateEnd);
         this.setState(state);
         this.setTags(tags);
+        this.setUsers(users);
     }
 
     setId(id) {
@@ -44,7 +45,19 @@ class TaskModel {
     }
 
     setTags(tags) {
-        this.tags = tags;
+        if (tags) {
+            this.tags = tags;
+        } else {
+            this.users = [];
+        }
+    }
+
+    setUsers(users) {
+        if (users) {
+            this.users = users;
+        } else {
+            this.users = [];
+        }
     }
 
 }

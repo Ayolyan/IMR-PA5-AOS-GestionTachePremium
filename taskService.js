@@ -22,7 +22,8 @@ db.defaults({
             dateBegin: new Date("2018-03-20"),
             dateEnd: new Date("2018-04-11"),
             state: "non precise",
-            tags: [ "0" ]
+            tags: [ "0" ],
+            users: []
         },
         {
             id: nanoid(8),
@@ -30,7 +31,8 @@ db.defaults({
             dateBegin: new Date("2018-03-20"),
             dateEnd: new Date("2018-04-11"),
             state: "en cours",
-            tags: [ "1", "2" ]
+            tags: [ "1", "2" ],
+            users: []
         },
         {
             id: nanoid(8),
@@ -38,7 +40,8 @@ db.defaults({
             dateBegin: new Date("2019-03-15"),
             dateEnd: new Date("2019-04-28"),
             state: "annulee",
-            tags: [ "2" ]
+            tags: [ "2" ],
+            users: []
         }
     ]
 }).write()

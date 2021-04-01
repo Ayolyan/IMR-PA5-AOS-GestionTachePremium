@@ -101,6 +101,24 @@ class TaskLowDBService {
     }
 
     /**
+     * Met à jour une tâche en lui ajoutant un utilisateur
+     * @param id Id de la tâche à mettre à jour
+     * @param userId Id de l'utilisateur à ajouter
+     */
+    updateAddUserById(id, userId) {
+        const task = db.get("tasks").find({ id: id });
+        let taskUsers = task.value().users;
+
+        if (!task.value().users.includes(userId)) {
+            taskUsers.push(userId);
+        } else {
+            throw new Error("Utilisateur déjà lié à la tâche.");
+        }
+
+        task.assign({ users: taskUsers}).write();
+    }
+
+    /**
      * Supprime une tâche d'après son id
      * @param id Id de la tâche à supprimer
      */
